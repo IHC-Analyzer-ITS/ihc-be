@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Documentation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .endpoint {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        .method {
+            font-weight: bold;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>API Documentation</h1>
+
+    <!-- Endpoint 1: Submit Data -->
+    <div class="endpoint">
+        <h2>1. Submit Data</h2>
+        <p><span class="method">POST</span> /data</p>
+        <p>Submits data to the server.</p>
+        <h3>Request:</h3>
+        <p>Content-Type: application/json</p>
+        <p>Example:</p>
+        <pre>
+{
+    "name": "John Doe",
+    "total_data": 10,
+    "sync_status": "Synced",
+    "description": "Sample description"
+}
+        </pre>
+        <h3>Response:</h3>
+        <pre>
+{
+    "message": "Data received successfully",
+    "name": "John Doe",
+    "timestamp_create": "2024-09-23 15:30:00",
+    "total_data": 10,
+    "sync_status": "Synced",
+    "description": "Sample description"
+}
+        </pre>
+        <p>Status code: 200 (OK) or 400 (Bad Request)</p>
+    </div>
+
+    <!-- Endpoint 2: Get Data -->
+    <div class="endpoint">
+        <h2>2. Get Data</h2>
+        <p><span class="method">GET</span> /data</p>
+        <p>Fetches the existing data stored in the server.</p>
+        <h3>Response:</h3>
+        <pre>
+[
+    {
+        "name": "John Doe",
+        "timestamp_create": "2024-09-23 15:30:00",
+        "total_data": 10,
+        "sync_status": "Synced",
+        "description": "Sample description"
+    }
+]
+        </pre>
+        <p>Status code: 200 (OK) or 400 (Bad Request)</p>
+    </div>
+
+    <!-- Endpoint 3: Capture Image -->
+    <div class="endpoint">
+        <h2>3. Capture Image</h2>
+        <p><span class="method">POST</span> /capture/&lt;name&gt;</p>
+        <p>Captures an image using the server's camera for the specified user.</p>
+        <h3>Request:</h3>
+        <p>Parameter in URL: <code>name</code> (the user name)</p>
+        <p>Example: /capture/johndoe</p>
+        <h3>Response:</h3>
+        <pre>
+{
+    "success": "Captured image successfully",
+    "image_path": "projects/johndoe/image_1.jpg"
+}
+        </pre>
+        <p>Status code: 200 (OK) or 400/500 (Error)</p>
+    </div>
+
+    <!-- Endpoint 4: Get Project Images -->
+    <div class="endpoint">
+        <h2>4. Get Project Images</h2>
+        <p><span class="method">GET</span> /projects/&lt;name&gt;</p>
+        <p>Fetches all images for a specific user project.</p>
+        <h3>Request:</h3>
+        <p>Parameter in URL: <code>name</code> (the user name)</p>
+        <p>Example: /projects/johndoe</p>
+        <h3>Response:</h3>
+        <pre>
+[
+    {
+        "title": "image_1.jpg",
+        "url": "http://localhost:5000/images/johndoe/image_1.jpg"
+    },
+    {
+        "title": "image_2.jpg",
+        "url": "http://localhost:5000/images/johndoe/image_2.jpg"
+    }
+]
+        </pre>
+        <p>Status code: 200 (OK) or 400 (Bad Request)</p>
+    </div>
+
+</body>
+</html>
