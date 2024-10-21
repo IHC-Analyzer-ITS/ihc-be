@@ -8,11 +8,11 @@ app = Flask(__name__)
 # Path gambar besar sebagai sumber
 BIG_IMAGE_PATH = "static/images/big_image.jpeg"
 
-# Fungsi mengambil potongan gambar pada posisi tertentu
-def capture_image_from_big_image(x, y, crop_size=(100, 100)):
+# Fungsi untuk mengambil potongan gambar pada posisi tertentu
+def capture_image_from_big_image(x, y, crop_size=(150, 150)):
     big_image = cv2.imread(BIG_IMAGE_PATH)
 
-    step_size = (50,50)
+    step_size = (50, 50)
     
     # Pastikan potongan tidak melewati batas gambar besar
     start_x = min(x * step_size[0], big_image.shape[1] - step_size[0])
@@ -27,37 +27,35 @@ def capture_image_from_big_image(x, y, crop_size=(100, 100)):
     
     return file_name
 
-# Fungsi untuk menggabungkan gambar menjadi panorama
-def stitch_images1(image_files, num_cols):
+# Fungsi untuk menggabungkan gambar menjadi panorama menggunakan OpenCV Stitcher
+def stitch_images1(image_files):
     rows = []
-    
-    # Gabungkan gambar secara horizontal per baris
+
     for row in image_files:
-        # Baca gambar di setiap baris dan gabungkan secara horizontal
-        images_row = [cv2.imread(img) for img in row]  # Membaca gambar per baris
-        row_combined = np.hstack(images_row) 
-         # Menggabungkan baris secara horizontal
+        images_row = [cv2.imread(img) for img in row]
+        row_combined = np.hstack(images_row)
+
         rows.append(row_combined)
 
-        stitcher = cv2
-    
-    # Gabungkan semua baris secara vertikal
     panorama = np.vstack(rows)
-    
-    # Simpan hasil panorama
-    panorama_file = "static/images/panorama.png"
+
+    panorama_file = "static/images/gambar.png"
     cv2.imwrite(panorama_file, panorama)
-    
+
     return panorama_file
 
-def stitch_images(image_files, num_cols):
+def stitch_images(image_files):
+    # cv2.ocl.setUseOpenCL(False)  # Nonaktifkan OpenCL untuk menghindari masalah
 
-    cv2.ocl.setUseOpenCL(False)
     # Baca gambar-gambar dari file
     images = [cv2.imread(img) for img in sum(image_files, [])]  # Flatten the 2D list to 1D
+
+    # Periksa jika ada gambar yang gagal dibaca
+    if any(img is None for img in images):
+        raise Exception("Satu atau lebih gambar gagal dibaca.")
     
     # Buat objek stitcher
-    stitcher = cv2.Stitcher_create()
+    stitcher = cv2.Stitcher.create()
 
     # Lakukan stitching (penggabungan gambar)
     status, panorama = stitcher.stitch(images)
@@ -93,7 +91,7 @@ def simulate():
                 image_files[y][x] = image_file
     
     # Gabungkan gambar menjadi panorama
-    panorama_file = stitch_images(image_files, width)
+    panorama_file = stitch_images(image_files)
     
     return render_template('result.html', panorama_file=panorama_file)
 
