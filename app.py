@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 import cv2
 import numpy as np
 import os
@@ -12,7 +12,7 @@ BIG_IMAGE_PATH = "static/images/big_image.jpeg"
 def capture_image_from_big_image(x, y, crop_size=(150, 150)):
     big_image = cv2.imread(BIG_IMAGE_PATH)
 
-    step_size = (50, 50)
+    step_size = (150, 150)
     
     # Pastikan potongan tidak melewati batas gambar besar
     start_x = min(x * step_size[0], big_image.shape[1] - step_size[0])
@@ -28,7 +28,7 @@ def capture_image_from_big_image(x, y, crop_size=(150, 150)):
     return file_name
 
 # Fungsi untuk menggabungkan gambar menjadi panorama menggunakan OpenCV Stitcher
-def stitch_images1(image_files):
+def stitch_images(image_files):
     rows = []
 
     for row in image_files:
@@ -44,7 +44,7 @@ def stitch_images1(image_files):
 
     return panorama_file
 
-def stitch_images(image_files):
+def stitch_images1(image_files):
     # cv2.ocl.setUseOpenCL(False)  # Nonaktifkan OpenCL untuk menghindari masalah
 
     # Baca gambar-gambar dari file
@@ -94,6 +94,54 @@ def simulate():
     panorama_file = stitch_images(image_files)
     
     return render_template('result.html', panorama_file=panorama_file)
+
+def stitch_images_v2(image_files, path):
+    rows = []
+
+    for row in image_files:
+        images_row = [cv2.imread(img) for img in row]
+        row_combined = np.hstack(images_row)
+
+        rows.append(row_combined)
+
+    panorama = np.vstack(rows)
+
+    panorama_file = "{path}/gambar.png"
+    cv2.imwrite(panorama_file, panorama)
+
+    return panorama_file
+
+@app.route('/start', methods=['POST'])
+def start():
+    data = request.get_json()
+
+    if not data:
+        return jsonify({'error':'no input data provided'}), 400
+    
+    project = data.get('project', 'No project provided')
+    section = data.get('section', 'No section provided')
+
+    # Mengembalikan respons JSON
+    width = int(request.form.get('width', 5))  # Parameter ukuran foto (misalnya 5)
+    height = int(request.form.get('height', 5))
+    
+    # Array 2D untuk menyimpan file gambar
+    image_files = [[None for _ in range(width)] for _ in range(height)]
+    
+    for y in range(height):
+        if y % 2 == 0:  # Zigzag ke kanan
+            for x in range(width):
+                image_file = capture_image_from_big_image(x, y)
+                image_files[y][x] = image_file
+        else:  # Zigzag ke kiri
+            for x in reversed(range(width)):
+                image_file = capture_image_from_big_image(x, y)
+                image_files[y][x] = image_file
+    
+    # Gabungkan gambar menjadi panorama
+    panorama_file = stitch_images_v2(image_files)
+    
+
 
 if __name__ == '__main__':
     if not os.path.exists('static/images'):
